@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
+import 'dart:convert';
 
-void main() {
-  runApp(const MainApp());
+String phpScriptPath = 'connect.php';
+
+// void main() {
+//   runApp(const MainApp());
+// }
+Future<void> main() async {
+ 
+  var server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8040);
+
+  // Obsługa żądań HTTP
+  await for (var request in server) {
+    var response = request.response;
+    response.headers.contentType = ContentType.html;
+    response.write('Hello from your PHP script!');
+    print("działa");
+    await response.close();
+  }
 }
-
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -32,8 +48,9 @@ class MainApp extends StatelessWidget {
               ElevatedButton(
                 onPressed: (){
                   String enteredEmail = textController.text;
+                  sendDataToDatabase(enteredEmail);
                 },
-                child: Text("Submit"),
+                child: Text("Submit")
               )
             ]
           )
@@ -41,5 +58,21 @@ class MainApp extends StatelessWidget {
         ),
       ),
     );
+    
   }
+  Future<Map<String, dynamic>> sendDataToDatabase(String data) async {
+  // Adres URL serwera HTTP
+  var serverUrl = '127.0.0.1:40';
+
+  var httpClient = HttpClient();
+  var request = await httpClient.postUrl(Uri.parse('$serverUrl/$phpScriptPath'));
+  request.headers.contentType = ContentType.json;
+  request.write(jsonEncode(data));
+  var response = await request.close();
+
+  // Odczytywanie odpowiedzi
+  var responseBody = await utf8.decoder.bind(response).join();
+  var responseData = jsonDecode(responseBody);
+  return responseData;
+}
 }
