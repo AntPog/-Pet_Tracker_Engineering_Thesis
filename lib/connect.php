@@ -1,6 +1,6 @@
 <?php
 // Dane do połączenia z bazą danych
-$host = '127.0.0.1';
+$host = 'http://127.0.0.1:80';
 $dbname = 'intest';
 $username = 'root';
 $password = '';
